@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  servers     Server[]
+  UserServers UserServers[]
+  Room        Room?         @relation(fields: [roomId], references: [id])
+  roomId      String?
+}
+
+model Server {
+  id          String        @id @default(cuid())
+  User        User?         @relation(fields: [userId], references: [id])
+  userId      String?
+  UserServers UserServers[]
+  rooms       Room[]
+}
+
+model Room {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  serverId String?
+  Server   Server?   @relation(fields: [serverId], references: [id])
+  User     User[]
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  Room      Room?    @relation(fields: [roomId], references: [id])
+  roomId    String?
+  text      String
+  name      String
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model UserServers {
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  @@id([userId, serverId])
+}
